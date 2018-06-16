@@ -120,6 +120,94 @@
 
  - メソッド：クローラスレッドをジョイン(スレッドの終了を待機)する
 
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/exec/ThumbnailGenerator.java
+  - サムネイル生成用のインターフェイス
+    - Options
+      -s セッションID -n 名前 -p プロパティパス -t スレッド番号 -c クリーンアップ 
+      toString オプションに設定された値を返す
+    - initializeProbes
+      プロセスProve（監視）
+      OSProove
+      JVMinfoのインスタンス生成
+    - main(arg)
+    　オプション生成
+      オプションを引数にコマンドラインパーサー生成
+      try
+      　argを引数にコマンドラインパーサーのparseArgumentメソッド呼ぶ
+      catch
+        システムエラー　当クラスのCanonical名を出力
+        オプションと使用方法を画面に出力
+        return
+      
+      デバッグ有効時
+        JVM起動パラメータ、プロパティ、環境変数、オプションをデバッグログへ出力する
+        
+      Constansから取得したEsClientの転送先アドレスを設定する
+      Constansから取得したEsClientのクラスター名を設定する
+      TimeoutTaskクラスをsystemMonitorTaskとして定義するする
+      exitcodeを定義する
+      
+      try
+      	シングルトンLaコンテナファクトリのコンフィグファイルパスにapp.xmlを設定する
+      	シングルトンLaコンテナファクトリのエクスターナルコンテキストにGenericExternalContextインスタンスを設定する
+      	シングルトンLaコンテナファクトリのエクスターナルコンテキストデフォルトレジスターに
+      	GenericExternalContextComponentDefRegisterインスタンスを設定する
+        シングルトンLaコンテナファクトリのinitメソッドを実行する
+        ShutdownHookスレッドインスタンスを生成する
+        runメソッドをオーバーライド(Threadクラスが継承するRunnableインターフェース)
+	        デバッグ有効時
+	        		Laコンテナ削除のメッセージを出力する
+	        	コンテナを削除する
+        RuntimeクラスのshutdownHookにShutdownHookスレッドインスタンスを登録(VMのshutdown)する（securityManagerでチェック）
+      	systemMonitorTaskにaddTimeoutTargetメソッドの戻り値TimeoutTaskを設定する
+      	引数：SystemMonitorTargetインスタンス、サジェストシステムモニター期間のint(60)、true
+      	プロセスメソッドを実行し、サムネイルの合計を変数に格納する
+      	合計が0でなければサムネイルファイルの合計をログに出力する
+      	0の場合はサムネイルが作成されなかったログを出力する
+      	終了コード0を設定する
+      	catch ContainerNotAvailableExceptionが起きた場合（コンテナが利用不可）
+      		デバッグ有効時：サムネイルジェネレーター停止したログメッセとExceptionログ出力
+      		インフォ有効時：サムネイルジェネレーター停止したログメッセ
+      		終了コード：1失敗
+      	catch Throwable　上記以外のエラーが起きた場合
+      		エラー：サムネイルジェネレーター異常ログメッセとThrowableログ出力
+      		Error, RuntimeException, Exception全てcatchする
+      		サムネイル生成処理なので処理ないで起きたエラーでアプリを止めないため
+      		終了コード：1失敗
+      	finally
+      		SystemMonitorTargetがnullでない場合cancelメソッドを実行する
+      		コンテナを削除する
+      	System.exitにexitCodeを設定する
+    
+    - destroyContainer
+    		privateメソッド
+    		SingletonLaContainerFactoryクラスをsynchronized（排他制御：ロック）
+    			SingletonLaContainerFactoryのdestroyメソッドを実行する
+    - process(Options)
+    		DynamicPropertiesクラスをインスタンス化する。SystemProperties
+    		optionのpropertiesPathがからでない場合
+    			systemPropertiesをリロード(propertiesPath)
+    		else
+    			try
+    				propFile：一時ファイルを生成する。"thumbnail_+createTempFileメソッドによって命名+.properties”
+    				propfileのdeleteメソッドを実行して正常終了し、loggerがデバッグ有効の場合
+    					デバッグログに一時ファイル削除のログメッセと一時ファイルの絶対パスを出力する。
+    					一時ファイル(絶対パス）ををリロードする。systemProperties
+    			catch IOException
+    				WARNログを出力する。
+    				システムプロパティーファイルの作成失敗ログメッセとException
+    				
+    			totalCountを0に設定する
+    			countを1に設定する。
+    			options.numOfThreads(スレッド数)を引数にForkJoinPoolをインスタンス化する。
+    			countが0でない場合
+    				ComponentUtilのThmbnailManagerメソッドのgenerateメソッドを実行し、戻り値をcountに設定する（引数：pool, potions.cleanup）。
+    				→ThumbnailManagerクラスを参照
+    				totalCountにcountを加算する。
+    			return
+    				totalCountを返す。
+    				
+
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/exec/SuggestCreator.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/crawler/interval/FessIntervalController.java
@@ -1443,14 +1531,103 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/taglib/FessFunctions.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/impl/BaseThumbnailGenerator.java
-  - サムネイル生成用の基本クラス
+  - サムネイル生成用の抽象クラス
+  　ThumbnailGeneratorインターフェースの実装
+  	コンディションマップの生成
+  	ディレクトリ名の長さ5を設定
+  	ジェネレーターリスト宣言
+  	ファイルパスマップ生成
+  	名前宣言
+  	最大リダイレクト数10を設定
+  	利用可能フラグnullを設定
+  
+  - addCondition(final String key, final String regex)
+  	引数のキーからコンディションマップの値を取得する
+  	値が空ならコンディションマップにキーと正規表現を設定する
+  	そうでなければコンディションマップにキーと値|正規表現を設定する
+  	
   - isTarget
     conditionMapのvalueに一致した文字があるかを判定
+    
   - isAvalable
     - generatorListがnullか空でなければ
       - PATH,Path,pathでパスを取得し、値があればpathListに入れる
       - PathListのpathでファイル生成→生成できればfilePathMapにgeneratorとfilePathを入れる
-
+      - generatorListが{$path}で始まっている場合
+      	- pathListのパスでgeneratorListの{$path}を置換する
+      	- ファイルが存在する場合
+      		- filePathに絶対パスを設定する
+      		- filePathMapにパスと絶対パスを設定する
+      		- filePathを返却する
+      	- generatorListのパスを返却する
+      - 全generatorListがファイルがの判定結果をavailableに設定する
+    - そうでなければ available=trueを設定する
+    - availableを返却する
+    
+    -  Tuple3<String, String, String> createTask(final String path, final Map<String, Object> docMap) 
+    		- サムネルのタスクを生成する
+    		- Fessコンフィグを取得する
+    		- FessコンフィグのインデックスフィールドIDをキーにドキュメントマップの値を取得し、thumbnailIdに設定する
+    		- 名前,サムネイルID,パスをもとにタスクを生成する
+    		- デバッグログ有効時
+    			- サムネイルタスク生成のログメッセとtaskを出力する
+    		- taskを返却する
+    	- setDirectoryNameLength
+    		- ディレクトリ名の長さのセッター
+    	- expandPath
+    		ファイルパスマップから値を取得して返却する
+    	
+    	- boolean process(final String id, final BiPredicate<String, String> consumer)
+    		- Predicateのtestメソッドの判定処理内容の実装箇所
+    		- →BaseThumbnailGenerator抽象クラスを継承したクラスで実装する
+    		- →process(final String id, final Predicate<ResponseData> consumer) 
+    		- →process(final String id, final BiPredicate<String, String> consumer)
+    		-
+    		- FessElasticsearchクライアント,id,[インデックスフィールドサムネイル,インデックスフィールドコンフィグID]をもとにドキュメントを取得する
+    		- ドキュメントが見つからない場合はログメッセとidをthrowする
+    		- ドキュメントからurlを取得する
+    		- urlが空の場合はサムネイルが無効のログメッセとurlをthrow
+    		- インデックスフィールドコンフィグIDをキーにドキュメントからコンフィグIDを取得する
+    		- コンフィグIDがnullか長さが2未満の場合は無効なコンフィグIDのログメッセとconfigIdをthrow
+    		- BiPredicateクラスのtestメソッドでコンフィグIDとurlを判定した結果を返却する
+    		- catch ThumbnailGenerationException
+    			- Causeがnullの場合
+    				- デバッグログを出力する
+    			- そうでなければprocess失敗のログメッセとid, ExceptionのWARNログ
+    		- catch Exception
+    			- process失敗のWARNログを出力する
+    		- falseを返却する
+    		
+    	- boolean process(final String id, final Predicate<ResponseData> consumer) 
+    		- 上記processメソッドの判定結果を返却する
+    			- クロールコンフィグヘルパーを取得する
+    			- コンフィグIDをもとにコンフィグを取得する
+    			- コンフィグがない場合はメッセージとconfigIdをthrow
+    			- Info有効時
+    				- サムネイル生成のログメッセとurlのinfoログを出力する
+    			- クローラークライアントファクトリークラスのインスタンスを取得する
+    			- urlをもとにクローラークライアントファクトリーからクローラークライアントインスタンスを取得する
+    			- クライアントがnullならログメッセとconfigId,urlをthrow
+    			- 最大リダイレクト数に達するまでループ処理
+    				- try クライアントからurlでリクエストデータを生成し、クライアントからレスポンスデータを取得する
+    					- レスポンスデータのリダイレクトロケーションが空でない場合
+    						- uにリダイレクトロケーションを設定して処理を継続
+    					-　空の場合
+    						- サムネイル内容のprocess失敗のログメッセとurlとレスポンスURLが空のログメッセをthrow
+    					- Predicateでレスポンスデータの判定結果を返却する
+    				- catch CrawlingAccessException
+    					- デバッグログ有効時
+    						- processのサムネイル内容が失敗のログメッセとurl,ThumbnailGenerationExceptionをthrow
+    					- そうでない場合
+    						-  ThumbnailGenerationExceptionのメッセージをthrow
+    				- catch Exception
+    					- processのサムネイル内容が失敗のログメッセとurl,ThumbnailGenerationExceptionをthrow
+    			- processのサムネイル内容が失敗のログメッセとurlとリダイレクトループのログメッセをthrow
+    	- GeneratorListのセッター
+    	- Nameのゲッター
+    	- Nameのセッター
+    	- 最大リダイレクト数のセッター
+      
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/impl/WebDriverGenerator.java
     - HTMLのサムネイル生成用クラス
     - init
@@ -1472,6 +1649,7 @@
       - phantomjs起動
     - findCLIArgumentsFromCaps
       - webDriverの利用に必要だが詳細は調べる(調)
+      
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/impl/CommandGenerator.java
   - コマンドを生成するクラス
     - 初期化
@@ -1488,13 +1666,384 @@
       - チェックに問題なければtrue返却
     - プロセスを消すクラス(タイムアウト)
 
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/impl/EmptyGenerator.java
+  - generateメソッドはfalseを返却する
+  - destroyメソッドを定義する
+  
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/impl/HtmlTagBasedGenerator.java
+  - destroyメソッドを定義する
+  - Tuple3<String, String, String> createTask(final String path, final Map<String, Object> docMap)
+  	- タスクを生成して返却する
+  	- ThumbnailGeneratorインターフェースのcreateTaskメソッドをオーバーライド
+  	- Fessコンフィグを取得する
+  	- ドキュメントマップ、FessコンフィグのインデックスフィールドIDからサムネイルIDを取得する
+  	- Name、サムネイルID、引数のパスからタスクインスタンスを生成する
+  	- デバッグログ有効時
+  		- 生成したタスクのログメッセとtaskをデバッグログ出力する
+  	- return task
+  
+  - boolean generate(final String thumbnailId, final File outputFile)
+  	- サムネイルの生成を行うメソッド
+  	- outputFileの存在確認、ディレクトリ判定をする
+  	- processメソッドの結果を返す
+  		- responsDataのlambdaはPredictionのtestメソッドの
+  		- isMimeTypeメソッドの結果がfalseの場合
+  			- デバッグログ有効時はサムネイルイメージがないログメッセージとthumbnailId,responseDataのURLを出力する
+  			- インデックスのサムネイルフィールドに空を設定する
+  			- return false
+  		- createImageInputStreamメソッドでresponseDataのレスポンスボディからInputStreamを取得する
+  		- saveImageメソッドでInputStreamをoutputFileにイメージを保存する
+  		- saveImageメソッドの結果によって処理を分岐する
+  			- OK:created true
+  			- FAILED:サムネイルの生成に失敗した
+  			- INVALID_SIZE:サムネイルサイズが無効
+  			- default:未知のサムネイル結果
+  		- catch Throwable
+  		- サムネイル生成に失敗した
+  		- finally
+  			- createdがfalseならインデックスのサムネイルフィールドに空を設定する
+  		- return outputFileの存在確認結果を返却する
+  		
+  	- boolean isImageMimeType(final ResponseData responseData)
+  		- MimeTypeの判定結果をbooleanで返すメソッド
+  		- true: null, "image/png","image/gif","image/jpeg","image/bmp"
+  		
+  	- Result saveImage(final ImageInputStream input, final File outputFile) throws IOException
+  		- サムネイルイメージを保存するメソッドでResultを返却する
+  		- Fessコンフィグを取得する
+  		- inputからImageReaderイテレータを取得する
+  		- イテレータ分ループ
+  			 - 処理中のImageReaderにinputを設定する
+  			 - readerのデフォルト読み込みパラメーラを取得する
+  			 - 幅、高さを取得する
+  			 - パラメータ：サンプリング用の幅、高さを設定する
+  			 - readerのイメージを読み込み、デフォルトのInputParamからBufferedImageを取得する
+  			 - サムネイルの幅、高さを設定する
+  			 - 設定したサムネイルの幅、高さ、typeからBufferedImageのインスタンスを生成する
+  			 - outputFileにサムネイルを描画イメージを書き込む
+  			 - return Result.OKを返す
+  		- readerを破棄する
+  		- return Result.Failedを返す
+  		
+  	- enum Result
+  		- OK, FAILED, INVALID_SIZE
+
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/ThumbnailGenerator.java
   - サムネイル生成用のインターフェイス
+    - Options
+      -s セッションID -n 名前 -p プロパティパス -t スレッド番号 -c 掃除 
     - isTarget
     - isTarget(ドキュメントのMap)
     - isAvailable
     - destroy
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/thumbnail/ThumbnailManager.java
+  - サムネイル生成管理クラス
+  - PostContstructアノテーション（初期処理用メソッドのアノテーション）
+  - init()
+    プロパティファイルからサムネイルパスを設定する
+    パスがnullでない場合
+    		パスにファイルを生成する
+    パスがnullの場合
+    		プロパティからFESSのvarパスを取得する
+    		varパスがnullでなければvarパスとサムネイルディレクトリ名からファイルを生成する
+    		nullの場合はResourceUtilのgetThumbnailPathメソッドから取得したパスにtoFileメソッドでファイルを生成する
+    		FileクラスのbaseDir変数へ格納する
+    	baseDirのmkdirsメソッドが成功した場合
+    		loggerに絶対パスのメッセージを出力する
+    	baseDirがディレクトリでない場合
+    		絶対パスが見つからないメッセージとともにFessSystemExceptionをthrowする
+    	debugログ有効時
+    		サムネイルディレクトリの絶対パスを出力する
+    	
+    	BlockingQueue Stringタプル3つのthumbnailTaskQueueにLinkedBlockingQueueクラスをキューサイズ10000を渡してインスタンス化する
+    Booleanのgeneratingに大小無視した"true"とサムネイルプロセスのプロパティ値を比較結果の逆を設定する
+    ThreadのthumbnailQueueThreadにThreadをインスタンス化する（第一引数：ターゲット） Runnableのラムダ->
+    		List Stringのタプル3のtaskListにArrayリストをインスタンス化する
+    		generatingの間ループを繰り返す
+	    		try
+	    			Stringのタプル３のtaskにArrayListをインスタンス化する
+	    			taskがnullの場合
+	    				taskListが空でない場合
+	    					taskListを引数にstoreQueueメソッドを実行する
+	    				taskListにtaskが含まれる場合
+	    					taskListにtaskを追加する
+	    					taskListサイズがthumbnailTaskのバルクサイズより大きい場合
+	    						taskListを引数にstoreQueueメソッドを実行する
+	    		catch InterruptedException
+	    			デバッグログ有効時
+	    			タスクが中断しバッグログメッセージとExceptionをログ出力する
+	    		catch Exception
+	    			generatingがtrueの場合
+	    			サムネイル生成に失敗したログメッセとExceptionをWARNログを出力する
+	    	taskListがからでない場合
+	    		taskListを引数にstoreQueueメソッドを実行する
+	    	, （第二引数：名前）"ThumbnailGenerator"
+	thumbnailQueueThreadのstartメソッドを実行する
+	init処理終了
+	
+  - PreDestroyアノテーション（コンテナ終了時の処理のアノテーション）
+  - destroy()
+  	generatingをfalseに設定する
+  	thumbnailQueueThreadのinterruptメソッド(割り込み)でスレッドを中断する
+  	try
+  		10000msを引数にthumbnailQueueThreadのjoinメソッドを実行する
+  		スレッドが生きている間10000ミリ秒waitして停止したmsが0以下になるまで実行する
+  		例外時はInturruptedExceptionをthrowする
+    	catch InterruptedException
+    		サムネイルタイムアウトのログメッセとExceptionのWARNログを出力する
+    	generatorListのforEach
+    		try
+    			リストの要素につきdestroyメソッドを実行する
+    			implクラスのgenaratorでオーバーライドされたdestroyメソッドを実行する
+    		catch Exception
+    			サムネイル生成停止失敗のログメッセとExceptionのWARNログを出力する
+    			
+  - getThumbnailPathOption()
+  	"-D [Fessサムネイルパス]=[絶対パス]"の文字列を返すメソッド
+  	コマンドリストに入れる際に呼び出されるメソッド
+  	
+  - storeQueue(taskList Stringのタプル3)
+    	Fessのコンフィグクラスを取得する
+    	システムヘルパークラスを取得する
+    	サムネイル生成のターゲット配列を取得する
+    	サムネイルキューのリストを生成する
+    	taskListのentityがnullでない場合、taskList forEach　task ->
+    		targetsの数分ループ
+    			サムネイルキューを生成する entity
+    			以下、サムネイルキューへの設定をする
+    				ジェネレーターを設定する
+    					設定値：taskのvalue1
+    				サムネイルIdを設定する
+    					設定値：taskのvalue2
+    				パスを設定する
+    					設定値：taskのvalue3
+    				ターゲットを設定する
+    					設定値：target
+    				作成者を設定する
+    					設定値：定数のシステムユーザーの値
+    				作成日時を設定する
+    					設定値：システムヘルパークラスの現在日時(long)
+    				listにentityを追加する
+    	taskListのループを抜ける
+    	taskListをクリアする
+    	デバッグログ有効時
+    		リストサイズ(サムネイルタスク数)をデバッグログを出力する
+    	ThumbnailQueueBhvを取得する（コンポーネントユーティリティクラスにインスタンス化されたThumbnailQueueBhvクラス）
+    	ThumbnailQueueBhvのバッチ登録メソッドでlistを登録する
+    	
+  - generate(final ForkJoinPool pool, final boolean cleanup)
+  	Fessコンフィグを取得する
+  	idListを生成する
+  	thumbnailQueueBhvを取得する
+  	thumbnailQueueBhvの検索結果を渡してpoolに登録する
+  	検索内容
+  		Fessコンフィグのデフォルトジョブターゲットが空の場合はコンフィグのデフォルトジョブターゲットをターゲットに設定して検索する
+  		上記以外はデフォルトジョブターゲットとFessコンフィグのスケジューラーターゲット名でターゲットを検索する
+  		作成日時の降順でソートする
+  		entityからIdを取得してidListに追加する
+  		もしcleanupがtrueかつデバッグログ有効時
+  			サムネイルキューが削除されたメッセとentityのデバッグログを出力する
+  		cleanupがfalseの場合
+  			fessConfigとentityを引数にprocessメソッドを実行する
+  	idListが空でない場合
+  		thumbnailQueueBhvで検索して削除をする
+  			検索内容
+  				idListのIdでthumbnailQueueのIdを検索
+  		thumbnailQueueBhvをリフレッシュする
+  	return idListサイズ
+  		
+  - generate(final FessConfig fessConfig, ThumbnailQueue entity)
+  	デバッグログ有効時
+  	サムネイル処理中のメッセとサムネイルキュークラスのtoStringメソッドのログ出力
+  	try
+  		アウトプットファイルをインスタンス化する
+  		ノーイメージファイルをインスタンス化する
+  		ノーイメージファイルがファイルでなく、削除期限超過の場合
+  			ノーイメージファイルがファイルで削除できなかった場合
+  				削除失敗のWARNログ出力
+  			サムネイルジェネレーターインスタンスを取得する
+  			ジェネレーター有効時
+  				サムネイルキューのサムネイルIDと出力先ファイルパスからサムネイルを生成する
+  				生成できなかった場合
+  					ノーイメージファイルとファイルの最終更新日を設定する  	
+    				生成できた場合
+    					インターバルを設定する
+    					0でなければスレッドをインターバルの分だけスリープする
+    			有効でない場合はWARNログを出力する
+    		それ以外の場合はデバッグログ有効時
+    			ノーイメージファイルが存在しないデバッグログを出力する
+    	catch Exception
+    		サムネイル生成失敗のWARNログを出力する
+    	
+  - offer(final Map<String, Object> docMap) 
+  	ジェネレーターリストの数分繰り返し
+  		ドキュメントマップがターゲットの場合
+  			ドキュメントマップからイメージファイル名を取得し、パスに設定する
+  			ドキュメントマップとパスからタスクを生成する
+  			タスクがnullでない場合
+  				デバッグログが有効な場合は追加サムネイルタスクのログを出力する
+  				生成したタスクでサムネイルタスクキューofferメソッド(リストの最後に追加)が失敗した場合
+  					サムネイルタスク追加失敗のログメッセとtaskの内容をログ出力する
+  				return true
+  			return false
+  	デバッグログ有効時
+  		サムネイルジェネレーターが見つからなかったログメッセと
+  		docmapがnullでなければdocmapのurl
+  		docmapがnullならdocmapの内容を出力する
+  	return false
+  - String getImageFilename(final Map<String, Object> docMap)
+  	サイズ50のStringビルダー生成
+  	Fessコンフィグ取得
+  	docmapからFessコンフィグのインデックスフィールドdocidを生成する
+  	docidの長さ分ループ
+  		ループ1回以上でiがsplitサイズで割り切れる場合
+  		Stringビルダーに/を追加する
+  	Stringビルダーに.pngを追加する
+  	return Stringビルダー文字列
+  - File getThumbnailFile(final Map<String, Object> docMap) 
+  	docmapからイメージファイル名を取得する(thumbnailパス)
+  	サムネイルパスがブランクでなければbaseDirとthumbnailパスからファイルを生成する
+  	fileがFileクラスなら
+  		return file
+  	return null
+  - add(final ThumbnailGenerator generator)
+  	デバッグログ有効時
+  		ジェネレーター名が利用可能のメッセージ出力
+  	ジェネレーターが利用可能な場合
+  		ジェネレーターリストにgeneratorを追加する
+  	
+  - long purge(final long expiry)
+  	baseDirが存在しない場合
+  		return 0
+  	try
+  		ファイル一掃訪問者？FilePurgeVisitorクラスのvisitorを生成する
+  		引数:baseDirのパス、拡張子、有効期限
+  		return  visitor数
+  	catch Exception
+  		JobProcessingExceptionをスロー
+  
+  - class FilePurgeVisitor implements FileVisitor<Path>
+  	有効期限
+  	カウント
+  	最大削除サイズ
+  	削除ファイルリスト
+  	baseパス
+  	拡張子
+  	FessEsクライアント
+  	Fessコンフィグ
+  	
+  	- FilePurgeVisitor(final Path basePath, final String imageExtention, final long expiry)
+  		引数の変数をクラスのローカル変数に設定する
+  		baseパス、拡張子、有効期限
+  		Fessコンフィグを取得する
+  		Fessコンフィグのページサムネイル削除最大取得サイズを取得する
+  		FessEsクライアントを取得する
+  		
+  	- deleteFiles
+  		ハッシュマップdeletedFileMapを生成する
+  		deletedFileListの数分ループ
+  			docIdにパスから取得したdocIdを設定する
+  			docIdがブランクかdeletedFileMapがdocIdを含む場合
+  				パスのファイルを削除する
+  			そうでない場合
+  				dleteFileMapにdocIdとパスを設定する
+  		deletedfileListをクリアする
+  		
+  		deleteFileMapが空でない場合
+  			docIdFieldにFessコンフィグのインデックスフィールドDocIdを設定する
+  			FessEsClientクラスのgetDocumentListメソッドを実行する
+  				Fessコンフィグからインデックスドキュメント検索インデックスを取得、
+  				Fessコンフィグからインデックスドキュメントタイプを取得、
+  				searchRequestBuilder
+  					searchRequestBuilderの検索条件を設定する
+  						QueryBuildersタームクエリー(
+  						docIdフィールド
+  						,deleteFileMapキーセット[deleteFileMapサイズ]の配列
+  					searchRequestBuilder取得ソースを設定する
+  						docIdFiled, 空文字
+  					forEach
+  						docIdに取得結果のdocIdFieldを設定する
+  							docIdがnullでない場合
+  								deleteFileMapからdocIdを削除する
+  								デバッグログ有効時
+  									サムネイル保持のメッセとdocIdをログ出力する
+  			deleteFileMapの値をforEach
+  				マップ分deleteFileメソッドを実行する
+  			カウント変数にdeleteFileMapサイズを加算する
+  	- deleteFile(final Path path)
+  		Filesクラスのdeleteメソッドでパスのファイルを削除する
+  		デバッグログ有効時
+  			削除のログメッセとパスをログ出力する
+  		
+  		parent　パスの親ディレクトリを取得する
+  		while deleteEmptyDirectoryメソッドでparentを削除する
+  			parentにparentの親ディレクトリを設定する
+  			（親ディレクトリを再帰的に削除する)
+  		catch IOException
+  			削除失敗したパスとExceptio文字列のWARNログを出力する
+  	
+  	 - String getDocId(final Path file)
+  	 	ファイルURI文字列を取得する
+  	 	basePathのURI文字列を取得する
+  	 	ファイルURI文字列の
+  	 		basePath文字列を空白で置換する
+  	 		.と拡張子を空白で置換する
+  	 		/を空白で置換する
+  	 	デバッグ有効時
+  	 		baseパスURI文字列、ファイルURI文字列、docIdをログ出力する
+  	 	return id
+  	 	
+  	 - getCount() 
+  	 	deletedFileListが空でない場合
+  	 		deleteFileメソッドを実行してファイルを削除する
+  	 	return カウント変数
+  	 	
+  	 @Override
+  	 - FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException
+  			return FileVisitResultのCONTINUE
+  	
+  	@Override
+  	 - 	FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+  	 	ファイルが有効期限日を超えていた場合
+  	 		deletedFileリストにファイルを追加する
+  	 		deletedFileリストサイズが最大削除サイズを超えていた場合
+  	 			ファイルを削除する（deleteFilesメソッド）
+  	 	return FileVisitResultのCONTINUE
+  	@Override
+  	 - FileVisitResult visitFileFailed(final Path file, final IOException e) throws IOException
+  	 	参照ファイルが壊れていた場合の処理
+  	 	exceptionがnullでない場合
+  	 		I/O exceptionディレクトリのWARNログを出力する
+  	 	return FileVisitResultのCONTINUE
+  	 	
+  	@Override
+  	 - FileVisitResult postVisitDirectory(final Path dir, final IOException e) throws IOException
+  	 	参照ファイルがディレクトリの処理
+  	 	exceptionがnullでない場合
+  	 		I/O exceptionディレクトリのWARNログを出力する
+  	 	空ディレクトリを削除する
+  	 	return FileVisitResultのCONTINUE
+  		
+  	- boolean deleteEmptyDirectory(final Path dir) throws IOException
+  		ディレクトリがnullの場合
+  			return false
+  		PathクラスのdirをFileクラスに変換してdirectoryに設定する
+  		directoryのリストがnullでなく、長さ0でサムネイルディレクトリ名とdirectoryの名前が同じでない場合
+  		＝サムネイルディレクトリ名以下のディレクトリで空のディレクトリの場合
+  			dirを削除する
+  			デバッグログ有効時
+  				Deleteディレクトリのデバッグログを出力する
+  			return true
+  		return false
+  		
+  	- void setThumbnailPathCacheSize(final int thumbnailPathCacheSize)
+  		サムネイルパスキャッシュサイズのセッター
+  	- void setImageExtention(final String imageExtention)
+  		イメージ拡張子のセッター
+  	- void setThumbnailTaskQueueSize(final int thumbnailTaskQueueSize)
+  		サムネイルタスクキューサイズのセッター
+  	- void setNoImageExpired(final long noImageExpired)
+  		ノーイメージ期限のセッター 
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/ds/DataStore.java
 
