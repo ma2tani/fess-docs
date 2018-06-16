@@ -2045,6 +2045,15 @@
   	- void setNoImageExpired(final long noImageExpired)
   		ノーイメージ期限のセッター 
 
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/timer/SystemMonitorTarget.java
+	- StringBuilder append(final StringBuilder buf, final String key, final Supplier<Object> supplier)
+		- "key":を設定する
+		- supplierのgetメソッドからvalueを取得する
+		- valueに応じてStringBuilderに追加する
+		- StringBuilderを返す
+		
+	- void expired
+
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/ds/DataStore.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/ds/impl/DatabaseDataStoreImpl.java
