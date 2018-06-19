@@ -2053,6 +2053,15 @@
 		- StringBuilderを返す
 		
 	- void expired
+		- StringBuilderをインスタンス化する
+		- システムモニターを出力する
+		- OS統計
+			- ElasticsearchのモニターOsProbeクラスのインスタンスを取得する
+			- メモリ：{物理:{未使用、合計}, スワップ領域:{未使用、合計}, CPU:{利用率}, (OsStatsインスタンスを取得する)負荷平均}
+		- プロセス統計
+		- JVM統計
+		- Elasticsearch統計
+		- 現在日時を出力する
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/ds/DataStore.java
 
