@@ -2059,7 +2059,27 @@
 			- ElasticsearchのモニターOsProbeクラスのインスタンスを取得する
 			- メモリ：{物理:{未使用、合計}, スワップ領域:{未使用、合計}, CPU:{利用率}, (OsStatsインスタンスを取得する)負荷平均}
 		- プロセス統計
+			- ElasticsearchのモニターProcessProbeクラスのインスタンスを取得する
+			- ファイルディスクリプタ:{open:{開いているファイル数}, max:{最大ファイルディスクリプタ数(同時オープン数)}, cpu:{cpu使用率, cpu合計時間}, 仮想メモリ:{仮想メモリサイズ}}
 		- JVM統計
+			- ElasticsearchのモニターJVMStatsクラスのインスタンスを取得する
+			- lasticsearchのモニターJVMStats.Memクラスのインスタンスを取得する(java.lang.management.MemoryMXBean)
+			- jvm:{memory:{heap:{used:使用中ヒープサイズ, committed:確定ヒープサイズ, max:最大ヒープサイズ, percent:ヒープ使用率}
+			- , non_heap:{used:未使用ヒープサイズ, commi†ted:未確定ヒープサイズ}}
+			- jvmStats.BufferPoolクラスのリストを取得する(List<java.lang.management.BufferPoolMXBean>)
+			- bufferePoolリストのlambda
+				- bufferPool名をJsonエスケープして出力する:{count:プール数, used:使用中プールサイズ, capacity:合計プール領域サイズ}
+			- bufferePoolのStringBuilderを結合する
+			-グローバルコレクターズ（GC）をJvmStatsから取得する
+			- グローバルコレクターのlambda
+			- gc名をJsonエスケープして出力する:{count:コレクション数, time:コレクションミリ秒}
+			- GCのStringBuilderを結合する
+			- jvmStatsからThreadsクラスを取得する
+			- threads:{count:スレッド数, peak:ピークスレッド数,}
+			- jvmStatsからClassesクラスを取得する
+			- classes:{loaded:読み込みクラス数, total_loaded:合計読み込みクラス数, unloaded:未読み込みクラス数},
+			- uptime:更新時間}
+			
 		- Elasticsearch統計
 		- 現在日時を出力する
 
