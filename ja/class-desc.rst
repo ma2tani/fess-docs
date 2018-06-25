@@ -2081,7 +2081,23 @@
 			- uptime:更新時間}
 			
 		- Elasticsearch統計
-		- 現在日時を出力する
+			- try
+				- FessEsクライアントインスタンスを取得する
+				- ノード統計レスポンスを設定する（以下取得する統計情報）
+					- Elasticsearchクライアント.admin.cluster.準備ノード統計.ingestなし.回路ブレーカなし（OOM対策のメモリ制限）.ノード検出なし.ファイルシステム情報あり
+					- .Httpなし.インデックスあり.JVMあり.OSあり.プロセスあり.プロセスあり.スクリプトなし.スレッドプールあり
+					- .トランスポート(転送)あり.10000件を上限に取得を実行する
+				- ElasitcsearchのJSONビルダーを取得する
+				- ビルダーに開始オブジェクトを設定する
+				- XContextにノード統計レスポンスを設定してJSONビルダーにレスポンスを設定する
+				- ビルダーに終了オブジェクトを設定する
+				- Stringのstatsにビルダーの文字列を設定する
+			- catch Exception
+				- Elasticsearch統計情報へのアクセスに失敗したログメッセを出力する
+			- StringBuilderに"elasticsearch:[statsの情報を出力する],"
+		- StringBuilderにタイムスタンプを出力する
+		- StringBuilderに"}"を出力する
+		-StringBuilderの文字列をinfoログに出力する
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/ds/DataStore.java
 
