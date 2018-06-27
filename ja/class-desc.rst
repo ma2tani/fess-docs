@@ -245,7 +245,21 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/InputStreamThread.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/ComponentUtil.java
-
+  - DIコンテナに登録するクラスを登録する
+    - loggerインスタンスを取得する
+    - 登録するクラスの宣言をする
+    - ComponentUtilのコンストラクタ
+    - processAfterContainerInit(final Runnable process)
+    		- プロセスを実行するか、初期化プロセスのリストに追加する
+    		- availableメソッドでシステムヘルパーのコンポーネントが取得できる場合
+    			- プロセスを実行する
+    		- そうでない場合
+    			- initProcessesリストにプロセスを追加する
+    	- doInitProcesses(final Consumer<? super Runnable> action)
+    		- initProcessesリスト分actionの処理を実行し、例外は呼び出し元にthrowする
+    
+    
+    
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/GroovyUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/OptionalUtil.java
