@@ -245,7 +245,7 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/InputStreamThread.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/ComponentUtil.java
-  - DIコンテナに登録するクラスを登録する
+  - DIコンテナに登録するクラス（コンポーネント）を登録する
     - loggerインスタンスを取得する
     - 登録するクラスの宣言をする
     - ComponentUtilのコンストラクタ
@@ -257,7 +257,89 @@
     			- initProcessesリストにプロセスを追加する
     	- doInitProcesses(final Consumer<? super Runnable> action)
     		- initProcessesリスト分actionの処理を実行し、例外は呼び出し元にthrowする
+    - ゲッター 
+    		- cipher名が一致するCachedCipherを返す(cipher:暗号)
+    		- QueryResponseListを返す
+    		- DynamicProperties(システムプロパティ)を返す（クローラープロパティ）
+    		- SystemHelperを返す（(nullかホットデプロイ有効の場合はコンポーネントを取得する)
+    		- ViewHelperを返す
+    		- SambaHelperを返す
+    		- QueryHelperを返す
+    		- LableTypeHelperを返す
+    		- SearchLogHelperを返す
+    		- CrawlingConfigHelperを返す(nullかホットデプロイ有効の場合はコンポーネントを取得する)
+    		- PopularWordHelperを返す
+    		- PathMappingHelperを返す
+    		- PathMappingHelperを返す
+    		- DuplicateHostHelperを返す
+    		- ProcessHelperを返す
+    		- JobHelperを返す
+    		- WebApiManagerFactoryを返す
+    		- UserAgentHelperを返す
+    		- DatastoreFactoryを返す
+    		- IntervalControlHelperを返す
+    		- ExtractorFactoryを返す
+    		- JobExecutorを返す
+    		- FileTypeHelperを返す
+    		- IndexUpdaterを返す
+    		- KeyMatchHelperを返す
+    		- IndexingHelperを返す(nullかホットデプロイ有効の場合はコンポーネントを取得する)
+    		- UserInfoHelperを返す
+    		- MessageManagerを返す
+    		- DictionaryManagerを返す
+    		- DataService<EsAccessResult>を返す
+    		- FessEsClientを返す
+    		- FessConfigを返す(nullの場合はコンポーネントを取得する)
+    		- SuggestHelperを返す
+    		- RoleQueryHelperを返す
+    		- LdapManagerを返す
+    		- ActivityHelperを返す
+    		- RequestManagerを返す
+    		- ResponseManagerを返す
+    		- JobManagerを返す
+    		- DocumentHelperを返す
+    		- QueryParserを返す
+    		- PermissionHelperを返す
+    		- SsoManagerを返す
+    		- ThumbnailManagerを返す
+    		- AuthenticationManagerを返す
+    		- PrimaryCipherを返す
+    		- CrawlerClientFactoryを返す
+    		- RelatedQueryHelperを返す
+    		- RelatedContentHelperを返す
+    		- VirtualHostHelperを返す
+    		- AccessTokenHelperを返す
+    		- QueryStringBuilderを返す
+    		- CurlHelperを返す
+    	- <T> T getComponent(final Class<T> clazz)
+    		- try
+    			- SingletonLaContainerのコンポーネントを返す
+    		- catch (final NullPointerException)
+    			- デバッグログ有効時
+    				- ContainerNotAvailableExceptionにクラスの正規名とExceptionを渡してthrowする
+    			- 上記以外の場合
+    				- ContainerNotAvailableExceptionにクラスの正規名を渡してthrowする
+    - <T> T getComponent(final String componentName)
+    		- try
+    			- 引数のコンポーネント名からコンポーネントを取得して返す
+    		- catch (final NullPointerException)
+    			- デバッグログ有効時
+    				- ContainerNotAvailableExceptionにクラスの正規名とExceptionを渡してthrowする
+    			- 上記以外の場合
+    				- ContainerNotAvailableExceptionにクラスの正規名を渡してthrowする
     
+    - Helperが存在する場合はtrueを返す
+    		- hasViewHelper
+	    	- hasQueryHelper
+    		- hasPopularWordHelper
+    		- hasRelatedQueryHelper
+    	- available
+    		- システムヘルパーがnullでなければtrueを返す
+    		- 上記以外の場合はfalseを返す
+    	- setFessConfig(final FessConfig fessConfig)
+    		- ConponentUtilのfessConfigに引数のfessConfigを設定する
+    		- fessConfigがnullの場合
+    			- FessPropのpropMapを削除する
     
     
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/GroovyUtil.java
