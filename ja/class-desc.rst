@@ -349,6 +349,17 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/WebApiUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocList.java
+	- clear()
+		- ArrayListを消去して
+		- contentSizeとprocessingTimeを0に設定する
+	- getContentSize()
+		- contentSizeを返す
+	- ProcessingTime()
+		- processingTimeを返す
+	- addProcessingTime()
+		- processingTimeを加算する
+	- toString()
+		- DocList coontentSize,processingTime, elementData（配列マップサイズ)
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocumentUtil.java
 
