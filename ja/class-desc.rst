@@ -349,6 +349,7 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/WebApiUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocList.java
+	- Documentのリスト
 	- clear()
 		- ArrayListを消去して
 		- contentSizeとprocessingTimeを0に設定する
@@ -360,6 +361,26 @@
 		- processingTimeを加算する
 	- toString()
 		- DocList coontentSize,processingTime, elementData（配列マップサイズ)
+
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocList.java
+	- Documentのオブジェクトマップ
+	- マップに対する操作のoverride処理
+	- entrySet()
+		- Set<Map.Entry<String, Object>>を返す
+		- クラス内で定義したMap(parent)のキーにlangが含まない場合
+			- parent.entrySet()の結果を返す
+		- parent.entrySet()を初期値にList<Map.Entry<String, Object>>をインスタンス化する
+			- listをソートする
+				- 第一オブジェクト、第二オブジェクトに分けてo1,o2とする
+				- o1のキーを取得するk1
+				- o1がlangの場合
+					-1を返却する(異常ステータス)
+				- -2のキーを取得するk2
+				- o2がlangの場合
+					- -1を返却する(異常ステータス)
+				- k1とk2を結合して返却する
+			- Collectionsのソート処理を抜けた場合
+				- listを初期値にLinkedHashSet<>をインスタンス化して返却する
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocumentUtil.java
 
