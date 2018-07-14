@@ -231,19 +231,53 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/MemoryUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/FacetResponse.java
+  - ファセットのレスポンス用ユーティリティ
+  	- クエリーカウントマップ、フィールドリスト
+  	- FacetResponse(Aggregations aggregations)
+  	- elasticsearchのaggregations(グループ)の内容を取得する
+	  	- filedで始まるグループを取得してフィールドリストに追加する
+	  	- queryで始まるグループを取得してqueryを除いたencodeQueryを取得する
+	  		- UTF-8でデコードしたクエリー、ドキュメント数をクエリーカウントマップに設定する
+	- hasFacetResponse()
+		- クエリーカウントマップかフィールドリストが空でなければtrueを返す
+	- Field
+		- valueカウントマップ、name
+		- コンストラクタ：Field(Terms termFacet)
+			- termFacetの名前からfieldを除いたencodeFieldを取得する
+			- UTF8ででコードした結果をnameに入れる
+			- termFacetからBuckets(検索結果の分類)ごとに処理をする
+				- valueカウントマップにBuvketのKey文字列、ドキュメントカウントを追加する
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/JobProcess.java
-
+	- Jobプロセスのインスタンス化を行う
+	- Process, InputStreamThreadを保持する
+	
+	
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/ResourceUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/RenderDataUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/KuromojiCSVUtil.java
-
+	- KuromojiCSVユーティリティ
+	- parse(final String line)
+		- CSVパース処理をする
+	- unQuoteUnEscape(final String original)
+		- 置換パターンに一致する文字列のエスケープクォートを外す
+	- quoteEscape(final String original)
+		- 置換パターンに一致する文字列にエスケープを施す
+	
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/QueryResponseList.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/InputStreamThread.java
-
+	- Threadを継承したInputStreamThreadクラス
+	- BufferedReader, 最大バッファサイズ、リスト（linkedList：前後の要素情報も保持し、要素の追加・削除が速い)
+	- コンストラクタ：InputStreamThread(InputStream is, String charset)
+		- is、charsetを元にInputStreamReaderをインスタンス化してBufferedReaderをインスタンス化する
+	- run()
+		- Threadのrun()オーバーライド
+			- BufferedReaderがnullでなければlistに追加
+			- 最大バッファサイズよりlistサイズが大きい場合はlistの1つめの要素を削除する
+	
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/ComponentUtil.java
   - DIコンテナに登録するクラス（コンポーネント）を登録する
     - loggerインスタンスを取得する
@@ -343,7 +377,9 @@
     
     
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/GroovyUtil.java
-
+	- Groovyスクリプトを実行する
+		- パラメータマップからGroovyShellをインスタンス化してtemplateを実行する
+		
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/OptionalUtil.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/WebApiUtil.java
@@ -362,7 +398,7 @@
 	- toString()
 		- DocList coontentSize,processingTime, elementData（配列マップサイズ)
 
-* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocList.java
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocMap.java
 	- Documentのオブジェクトマップ
 	- マップに対する操作のoverride処理
 	- entrySet()
@@ -383,6 +419,32 @@
 				- listを初期値にLinkedHashSet<>をインスタンス化して返却する
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/DocumentUtil.java
+	- Documentのユティリティに関するクラス
+	- 引数のnullチェックをする
+	- <T> T getValue(final Map<String, Object> doc, final String key, final Class<T> clazz, final T defaultValue)
+		 - docマップ、キー、クラスを元にvalueを取得する
+	- <T> T getValue(final Map<String, Object> doc, final String key, final Class<T> clazz)
+		- keyをもとにdocのvalueを取得する
+		- valueがListオブジェクトの場合
+			- isAssignableFrom(クラス同士の比較)クラスがListクラスの場合
+				- valueを返す
+			- Listオブジェクトのvalueがからの場合
+				- nullを返す
+			- プライベートメソッドのconvertObjでクラスを変換して返す
+	- <T> T convertObj(final Object value, final Class<T> clazz)
+		- Listオブジェクトがどのクラスかを判別して返却する
+	- String encodeUrl(final String url) 
+		- requestされたurlをエンコード処理する
+		- requestの文字コードを取得してnullでなければ,streamのmapにつめる
+		- requestの文字コードがOptionalなのでなければUTF-8が入る
+		- urlの長さ+100のStringBuilderをインスタンス化する
+		- urlのchar配列を取得して1charごとに処理する
+		- charがurl使用可能文字であればbufに追加する
+		- そうでない場合
+			- charのURLエンコード化して追加する
+			- サポートされてないエンコードの場合はcharをbufに追加する
+		- bufのtoStringメソッドを返却する
+			
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/exception/UnsupportedSearchException.java
 
