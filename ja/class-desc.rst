@@ -225,11 +225,35 @@
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/crawler/transformer/FessFileTransformer.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/ParameterUtil.java
+  - パラメータユーティリティ
+  	- Map<String, String> parse(final String value) 
+  		- valueを\r\nごとに配列に分割する
+  		- =のインデックス番号を基にkeyとvalueをトリムしてparamMapに格納する
+  	- void loadConfigParams(final Map<String, Object> paramMap, final String configParam) 
+  		- parseメソッドでconfigParamをMapに変換してparamMapに格納する
+  	- Map<ConfigName, Map<String, String>> createConfigParameterMap(final String configParameters) 
+  		- CLIENT, XPATH, META, VALUE, SCRIPT, FIELD, CONFIGごとのConfigMapをインスタンス化する
+  		- ConfigMapオブジェクトを格納したmapをインスタンス化する
+  		- configParametersをMapにパースしてMap<String, String>entryオブジェクトを取得する
+  			- entryのキーとConfigの開始文字列に応じてConfigMapへvalueを格納する
+  			- （ConfigMapはmapに格納されたオブジェクトなのでConfigMapにputするだけでよい)
+  		- mapを返す
+
+* https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/PrunedTag.java
+  - DOM要素に関するユーティリティ
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/QueryStringBuilder.java
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/MemoryUtil.java
-
+  - メモリーユーティリティ
+  	- getMemoryUsageLog() 
+  		- Runtimeを取得する
+  		- 未使用メモリ、ヒープメモリ、最大メモリを返す
+  	- byteCountToDisplaySize(final long size)
+  		- longのサイズを文字列に変換し、半角スペースを空文字に置換した文字列を返す
+  	- getUsedMemory() 
+  		- 合計メモリから未使用メモリを減算したlong値を返す
+  
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/FacetResponse.java
   - ファセットのレスポンス用ユーティリティ
   	- クエリーカウントマップ、フィールドリスト
@@ -381,6 +405,8 @@
 		- パラメータマップからGroovyShellをインスタンス化してtemplateを実行する
 		
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/OptionalUtil.java
+	- <T> OptionalEntity<T> ofNullable(final T entity)
+		- 引数のオブジェクトのOptionalEntitryをインスタンス化して返す
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/WebApiUtil.java
 
