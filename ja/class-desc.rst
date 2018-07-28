@@ -291,7 +291,33 @@
 		- 置換パターンに一致する文字列にエスケープを施す
 	
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/QueryResponseList.java
-
+	- クエリーのレスポンスリスト
+	- 省略文字列、親マップリスト、ページサイズ、現在ページ番号、全レコード数、全ページ数、存在する次ページ、存在する前ページ、
+	- 現在開始レコード番号、現在終了レコード番号、ページ番号リスト、検索クエリー、実行時間、ファセットレスポンス、部分的結果、クエリー時間
+	- void init(final OptionalEntity<SearchResponse> searchResponseOpt, final int start, final int pageSize) 
+		- searchResponseOptが存在する場合
+			- Fessコンフィグを取得、searchResponseの検索結果を取得
+			- 全シャードと成功全シャードが一致しなければ
+				- 部分的結果をtrueに設定する
+			- QueryHelperを取得する
+			- QueryHelperからハイライト前方一致文字列を取得する
+			- searchHitsの件数分繰り返し
+				- Fessコンフィグ、ハイライト前方一致文字列、検索結果をparseSearchHitメソッドでMap<String, Object>にパースしてdocMapを取得する
+				- 検索結果結果折りたたみ有効時
+					- 内部ヒットを取得し、nullでなければ処理する
+						- 検検索結果合計を取得し、1件以上であれば処理する
+							- Fessコンフィグのクエリー折りたたみ内部ヒット名_count, 検索結果合計をdocMapに入れる
+							- FessコンフィグのIndexフィールドMinhashBitsをSearchHitのフィールドから取得する（DocumentField）
+							- DocumentFieldがnullでなく、値もemptyでなければ
+								- クエリー折りたたみ内部ヒット名_hash, DocumentFieldの値（０）をdocMapに入れる
+							- クエリー折りたたみ内部ヒット名, parseSearchHitメソッドでMap<String, Object>にパースしてdocMapに入れる
+				- 親マップリスト(parent)にdocMapを追加する
+			- SearchResponseからAggregationsを取得する
+				- Aggregationsがnullでなければ処理する
+					- AggregationsからFacetResponseをインスタンス化する。
+		- calculatePageInfoメソッドでページ情報を設定する
+	
+	
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/InputStreamThread.java
 	- Threadを継承したInputStreamThreadクラス
 	- BufferedReader, 最大バッファサイズ、リスト（linkedList：前後の要素情報も保持し、要素の追加・削除が速い)
