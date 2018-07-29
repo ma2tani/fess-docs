@@ -316,7 +316,21 @@
 				- Aggregationsがnullでなければ処理する
 					- AggregationsからFacetResponseをインスタンス化する。
 		- calculatePageInfoメソッドでページ情報を設定する
+	- Map<String, Object> parseSearchHit(final FessConfig fessConfig, final String hlPrefix, final SearchHit searchHit) 
+		- docMapに値、ハイライト情報、ResponseField、スコアを設定する
+		- searchHitのsourceAsMapがnullでない場合
+			- searchHitのFieldsからkeyとvalueをdocMapに設定する
+			- searchHitのHighlightFieldsを取得してhighlight情報をdocMapに設定する
+			- ViewHelperを取得し、nullでなければ処理する
+				- ViewHelperのメソッドにdocMapを渡してViewHelperに関するdocMapを取得する
+				- コンテンツタイトル、コンテンツ概要、URLリンク、サイトパス
+			- docMapがscoreを含んでいない場合
+				- docMapにscore, searchHitから取得したスコアを設定する
+		- docMapを返却する
 	
+	- void calculatePageInfo(final int start, final int size)
+		- ページ情報を設定する
+		- 全ページ件数、前ページ存在フラグ、次ページ存在フラグ、現在ページ番号、現在開始・終了レコード番号、ページ番号リスト
 	
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/InputStreamThread.java
 	- Threadを継承したInputStreamThreadクラス
