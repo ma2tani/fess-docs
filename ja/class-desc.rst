@@ -243,6 +243,15 @@
   - DOM要素に関するユーティリティ
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/QueryStringBuilder.java
+  - SearchRequestParams
+  - valueにクォートを入れるメソッド
+  - String build()
+  	- paramsからConditionsを取得する(Map<String, String[]）
+  	- そうでない場合、paramsからConditionQueryを取得できたらparamsからクエリーを取得する
+  	- queryがからでない場合、queryをqueryBufに設定する
+  - void appendConditions(StringBuilder queryBuf, Map<String, String[]> conditions)
+  	- 出現頻度、クエリー長、クエリーエスケープ処理、OR処理、NOT処理、ファイルタイプ、サイトサーチ、タイムスタンプ
+  
 
 * https://github.com/codelibs/fess/blob/master/src/main/java/org/codelibs/fess/util/MemoryUtil.java
   - メモリーユーティリティ
